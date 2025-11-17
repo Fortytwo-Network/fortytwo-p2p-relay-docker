@@ -1,0 +1,16 @@
+version: "3.9"
+
+services:
+  fortytwo-relay:
+    container_name: fortytwo-relay
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: always
+    environment:
+      FT_ACCOUNT_PRIVATE_KEY: ${FT_ACCOUNT_PRIVATE_KEY}
+      FT_NODE_LISTENER_PORT: ${FT_NODE_LISTENER_PORT}
+      FT_RPC_SERVICE_PORT: ${FT_RPC_SERVICE_PORT}
+    ports:
+      - "${FT_NODE_LISTENER_PORT}:${FT_NODE_LISTENER_PORT}"
+      - "${FT_RPC_SERVICE_PORT}:${FT_RPC_SERVICE_PORT}"
