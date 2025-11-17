@@ -1,6 +1,14 @@
 # INDEX-DIGEST sha256:936abff852736f951dab72d91a1b6337cf04217b2a77a5eaadc7c0f2f1ec1758
 FROM debian:12-slim
 
+LABEL network.fortytwo.image.title="Relay Node"
+LABEL network.fortytwo.image.description="Relay node for protocol messages"
+LABEL network.fortytwo.image.authors="Aleksei Ivashov <aivashov@fortytwo.network>"
+LABEL network.fortytwo.image.vendor="Fortytwo Network"
+LABEL network.fortytwo.image.url="https://fortytwo.network"
+LABEL network.fortytwo.image.source="https://github.com/Fortytwo-Network/fortytwo-relay-setup"
+LABEL network.fortytwo.image.licenses="Apache 2.0"
+
 
 RUN apt-get update && apt-get install -y \
     ca-certificates \
