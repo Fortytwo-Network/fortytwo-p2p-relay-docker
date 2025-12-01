@@ -6,7 +6,7 @@ RELAY_EXEC="${RELAY_EXEC:-/workspace/relay}"
 echo "Check current version"
 CURRENT_RELAY_VERSION_OUTPUT=$("$RELAY_EXEC" --version 2>/dev/null)
 
-RELAY_VERSION=$(curl -s "https://fortytwo-network-packages-public.s3.us-east-2.amazonaws.com/relay/latest")
+RELAY_VERSION=$(curl -s "https://download.swarminference.io/relay/latest")
 echo "Latest version is v$RELAY_VERSION"
 
 case "$CURRENT_RELAY_VERSION_OUTPUT" in
