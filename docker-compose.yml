@@ -6,11 +6,64 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    restart: always
+    restart: unless-stopped
     environment:
       FT_ACCOUNT_PRIVATE_KEY: ${FT_ACCOUNT_PRIVATE_KEY}
       FT_NODE_LISTENER_PORT: ${FT_NODE_LISTENER_PORT}
       FT_RPC_SERVICE_PORT: ${FT_RPC_SERVICE_PORT}
+      FT_IPFS_URL: "http://ipfs-kubo:5001"
     ports:
       - "${FT_NODE_LISTENER_PORT}:${FT_NODE_LISTENER_PORT}"
       - "${FT_RPC_SERVICE_PORT}:${FT_RPC_SERVICE_PORT}"
+    networks:
+      - ipfs-network
+    depends_on:
+      - ipfs-kubo
+  ipfs-kubo:
+    image: ipfs/kubo:v0.39.0
+    container_name: fortytwo-ipfs-kubo
+    restart: unless-stopped
+    entrypoint: ["/sbin/tini", "--"]
+    user: ipfs 
+    command: >
+      sh -c "
+        if [ ! -f /data/ipfs/config ]; then
+          echo 'Initializing IPFS for the first time';
+          ipfs init;
+          
+        else
+          echo 'IPFS already initialized';
+        fi &&
+        echo 'Applying network configuration' &&
+        ipfs config --json Addresses.AppendAnnounce '[
+          \"/ip4/${HOST_PUBLIC_IP}/tcp/${IPFS_SWARM_PORT}\",
+          \"/ip4/${HOST_PUBLIC_IP}/udp/${IPFS_SWARM_PORT}/quic-v1\",
+          \"/ip4/${HOST_PUBLIC_IP}/udp/${IPFS_SWARM_PORT}/quic-v1/webtransport\"
+        ]' &&
+        ipfs config Addresses.API /ip4/0.0.0.0/tcp/5001 &&
+        ipfs config --json API.HTTPHeaders.Access-Control-Allow-Origin '[\"*\"]' &&
+        ipfs config --json API.HTTPHeaders.Access-Control-Allow-Methods '[\"GET\", \"POST\", \"PUT\"]' &&
+        /usr/local/bin/start_ipfs daemon --migrate=true --agent-version-suffix=docker
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "ipfs --api=/ip4/127.0.0.1/tcp/5001 dag stat /ipfs/QmUNLLsPACCz1vLxQVkXqqLX5R1X345qqfHbsf67hvA3Nn || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    volumes:
+      - ${IPFS_DATA_PATH}:/data/ipfs:rw
+      - ${IPFS_MOUNT_PATH}:/ipfs:rw
+      - ${IPFS_MOUNT_PATH}:/ipns:rw
+    environment:
+      - IPFS_PATH=/data/ipfs
+    ports:
+      # Swarm listens on all interfaces, so is remotely reachable.
+      - ${IPFS_SWARM_PORT}:4001/tcp
+      - ${IPFS_SWARM_PORT}:4001/udp
+    networks:
+      - ipfs-network
+
+networks:
+  ipfs-network:
+    driver: bridge
