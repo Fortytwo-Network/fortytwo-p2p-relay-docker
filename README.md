@@ -1,4 +1,4 @@
-# Fortytwo Relay Node
+# Fortytwo P2P Relay Node
 
 For a complete guide on how to download, install, and operate a Fortytwo Relay Node, please refer to the official documentation:
 
